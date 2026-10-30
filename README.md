@@ -2,9 +2,36 @@
 
 A transformer model written from scratch to play Chess ♟️
 
-This repository holds an attempted recreation of the following paper, with some (scratch) notes below: [Grandmaster-Level Chess Without Search (Ruoss et al. 2024)](https://arxiv.org/abs/2402.04494).
+This repository holds a spirited recreation of the following paper, with some (scratchy) notes below: [Grandmaster-Level Chess Without Search (Ruoss et al. 2024)](https://arxiv.org/abs/2402.04494).
 
 
+## Data
+
+The training dataset comes from [Google Deepmind's searchless-chess](https://github.com/google-deepmind/searchless_chess) repository, using their Action-Value approach (of the three predictors). For now, I'm only using their 1.2 GB partial training data.
+
+**FEN record format:**
+1. piece placement date ranks 8...1 (/ separated)
+	white: PNBRQK
+	black: pnbrqk
+	empty square: 1-8 (# of adjacent empty sq)
+2. active color [w|b]
+3. castling: [-KQkq]
+4. en passant: square or -
+5. halfmove clock: fifty move rule
+6. number of fullmoves
+
+79 token input:
+- first 77: FEN serialized
+- move ID
+- bucket K#
+- shift by 1, so [0] ... [move id]
+
+## Model
+
+token IDs:          [B, 79]
+token embeddings:   [B, 79, D]
+position embeddings:   [79, D]
+combined:           [B, 79, D]
 
 ## Paper notes: *Grandmaster-Level Chess Without Search* (bit of an info dump, sorry)
 
