@@ -30,3 +30,5 @@ print(len(reader))
 # print first feature
 fen, move, win_prob = CODERS["action_value"].decode(reader[0])
 print(fen, move, win_prob)
+
+# try sample pass

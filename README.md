@@ -2,12 +2,14 @@
 
 A transformer model written from scratch to play Chess ♟️
 
-This repository holds a spirited recreation of the following paper, with some (scratchy) notes below: [Grandmaster-Level Chess Without Search (Ruoss et al. 2024)](https://arxiv.org/abs/2402.04494).
+This repository holds a spirited recreation of the following paper: [Grandmaster-Level Chess Without Search (Ruoss et al. 2024)](https://arxiv.org/abs/2402.04494). Further, I referenced the associated [google-deepmind/searchless_chess](https://github.com/google-deepmind/searchless_chess) repository, and utilized their provided dataset.
+
+To practice the skill of implementing models from research papers, there is **absolutely zero AI output** in this repository. Everything is my own.
 
 
-## Data
+## Dataset
 
-The training dataset comes from [Google Deepmind's searchless-chess](https://github.com/google-deepmind/searchless_chess) repository, using their Action-Value approach (of the three predictors). For now, I'm only using their 1.2 GB partial training data.
+The training dataset comes from [Google Deepmind's searchless-chess](https://github.com/google-deepmind/searchless_chess) repository, using their Action-Value approach (of the three predictors) sourced from Lichess/Stockfish16. For now, I'm only using their 1.2 GB partial training data and test data.
 
 **FEN record format:**
 1. piece placement date ranks 8...1 (/ separated)
@@ -29,6 +31,9 @@ The training dataset comes from [Google Deepmind's searchless-chess](https://git
 ## Model
 
 token IDs:          [B, 79]
+
+
+
 token embeddings:   [B, 79, D]
 position embeddings:   [79, D]
 combined:           [B, 79, D]
