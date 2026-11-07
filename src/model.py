@@ -5,7 +5,7 @@ from dataclasses import dataclass
 @dataclass
 class TransformerConfig:
     num_layers: int = 4 # number of transformer blocks
-    num_heads: int = 8 # number of heads per layer
+    num_heads: int = 8 # number of attention heads per layer
 
     # 31 for FEN vocabulary + 1968 unique positions
     vocab_size: int = 1999
@@ -18,7 +18,13 @@ class TransformerConfig:
     widening_factor: int = 4
 
 class Attention(torch.nn.Module):
-    pass
+    """multi-head attention"""
+
+    def __init__(self, config: TransformerConfig):
+        self.num_heads = config.num_heads
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        pass
 
 class MLP(torch.nn.Module):
     """gated MLP block for transformer"""
