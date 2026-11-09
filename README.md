@@ -30,6 +30,10 @@ The training dataset comes from [Google Deepmind's searchless-chess](https://git
 
 ## Model
 
+\[
+f_\theta(s,a)\rightarrow P_\theta(z\mid s,a)
+\]
+
 token IDs:          [B, 79]
 
 
