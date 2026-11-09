@@ -12,7 +12,7 @@ class TransformerConfig:
 
     # token stuff
     embed_dim: int = 64 # C
-    num_embed: int = 78 # positions
+    num_embed: int = 79 # positions
 
     # mlp
     widening_factor: int = 4
@@ -21,6 +21,7 @@ class Attention(torch.nn.Module):
     """multi-head attention"""
 
     def __init__(self, config: TransformerConfig):
+        super().__init__()
         self.config = config
         self.qkv_linear = torch.nn.Linear(config.embed_dim, 3*config.embed_dim) # [B,T,C] -> [B,T,3C]
         self.proj_linear = torch.nn.Linear(config.embed_dim, config.embed_dim)
@@ -29,7 +30,7 @@ class Attention(torch.nn.Module):
         B,T,C = x.shape
 
         qkv = self.qkv_linear(x) # [B,T,3C]
-        q,k,v = torch.split(qkv, self.config.embed_dim) # 3x [B,T,C]
+        q,k,v = torch.split(qkv, self.config.embed_dim, dim=-1) # 3x [B,T,C]
 
         H = self.config.num_heads
         D = self.config.embed_dim // H
@@ -79,17 +80,18 @@ class Block(torch.nn.Module):
 
         self.config = config
 
-        #self.Attn = Attention()
         self.Ln1 = torch.nn.LayerNorm(self.config.embed_dim)
         self.Ln2 = torch.nn.LayerNorm(self.config.embed_dim)
+
+        self.Attn = Attention(config)
         self.MLP = MLP(config)
 
         self.config = config
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         # x = [B,T,C]
-        #x += self.Attn(self.Ln1(x)) # [B,T,C]
-        x = self.MLP(self.Ln2(x))    # [B,T,C]
+        x = x + self.Attn(self.Ln1(x)) # [B,T,C]
+        x = x + self.MLP(self.Ln2(x))  # [B,T,C]
         return x
 
 class Transformer(torch.nn.Module):
@@ -116,8 +118,12 @@ class Transformer(torch.nn.Module):
 
         B,T = inputs.shape # [B, T]
 
-        h = self.embed_table(inputs)     # [B, T, C]
-        h += self.position_table(inputs) # [B, T, C]
+        positions = torch.arange(T, device=inputs.device)
+
+        embeddings = self.embed_table(inputs)
+        positions = self.position_table(positions)
+
+        h = embeddings + positions # [B,T,C]
 
         for b in self.blocks: h = b(h)
 
