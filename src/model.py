@@ -4,18 +4,13 @@ from dataclasses import dataclass
 
 @dataclass
 class TransformerConfig:
-    num_layers: int = 4 # number of transformer blocks
-    num_heads: int = 8 # number of attention heads per layer
-
-    # 31 for FEN vocabulary + 1968 unique positions
-    vocab_size: int = 1999
-
-    # token stuff
-    embed_dim: int = 64 # C
-    num_embed: int = 79 # positions
-
-    # mlp
-    widening_factor: int = 4
+    embed_dim: int = 64      # C vector
+    num_layers: int = 4      # number of transformer blocks
+    num_heads: int = 8       # number of attention heads per layer
+    num_bins: int = 128      # winrate bin size (K=128, from paper)
+    num_embed: int = 79      # sequence length
+    vocab_size: int = 1999   # 31 for FEN vocabulary + 1968 unique positions
+    widening_factor: int = 4 # MLP
 
 class Attention(torch.nn.Module):
     """multi-head attention"""
@@ -108,6 +103,12 @@ class Transformer(torch.nn.Module):
         # token position 0...79 --> d vec
         self.position_table = torch.nn.Embedding(config.num_embed, config.embed_dim) # [79, 64]
 
+        # final layer norm
+        self.final_Ln = torch.nn.LayerNorm(config.embed_dim)
+
+        # bin head (K=128)
+        self.bin_head = torch.nn.Linear(config.embed_dim, config.num_bins)
+
     def forward(self, inputs: torch.Tensor):
         # input tokens: [ BOS(1) ][ FEN(77) ][ ACTION(1) ] 79 sequence len 
         #   * ACTION part of 1968 UCI-notation moves, 
@@ -127,3 +128,8 @@ class Transformer(torch.nn.Module):
 
         for b in self.blocks: h = b(h)
 
+        # final layer norm, project into logits, bin probs with softmax
+        logits = self.bin_head(self.final_Ln(h))
+        probs = torch.nn.functional.softmax(logits, dim=-1)
+
+        return probs
